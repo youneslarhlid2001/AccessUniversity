@@ -1,0 +1,224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  phone         String?
+  role          String    @default("student") // "student" | "admin"
+  isPremium     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  orientationResponses OrientationResponse[]
+  recommendations      Recommendation[]
+  payments             Payment[]
+  fileUploads          FileUpload[]
+  applications         Application[]
+  favorites            Favorite[]
+
+  @@map("users")
+}
+
+model School {
+  id          String   @id @default(uuid())
+  name        String
+  description String   @db.Text
+  country     String
+  city        String?
+  program     String   @db.Text
+  price       Float?
+  imageUrl    String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+
+  ranking     Int?
+  badges      String[] // Array of strings for badges like "Top 10", "Business", etc.
+
+  recommendations Recommendation[]
+  applications    Application[]
+  favorites       Favorite[]
+
+  @@map("schools")
+}
+
+model OrientationResponse {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level         String   // "bac", "bac+2", "bac+3", "bac+5"
+  country       String
+  objectives    String   @db.Text
+  profile       String   @db.Text
+  score         Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@map("orientation_responses")
+}
+
+model Recommendation {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  score     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("recommendations")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount        Float
+  stripeId      String?  @unique
+  status        String   // "pending", "completed", "failed"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("payments")
+}
+
+model FileUpload {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName    String
+  filePath    String
+  fileType    String
+  category    String?  // "cv", "diploma", "transcript", "other"
+  createdAt   DateTime @default(now())
+
+  @@map("file_uploads")
+}
+
+model Housing {
+  id          String   @id @default(uuid())
+  name        String
+  description String   @db.Text
+  city        String
+  country     String
+  type        String   // "studio", "appartement", "colocation", "résidence"
+  price       Float?
+  partner     String
+  imageUrl    String?
+  amenities   String[] // Array of amenities
+  available   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("housings")
+}
+
+model HousingPartner {
+  id          String   @id @default(uuid())
+  name        String
+  email       String
+  website     String
+  cities      String[] // Array of cities covered
+  description String?  @db.Text
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("housing_partners")
+}
+
+model Application {
+  id             String    @id @default(uuid())
+  userId         String
+  schoolId       String
+  status         String    @default("interested") // "interested", "applied", "in_progress", "accepted", "rejected"
+  notes          String?   @db.Text
+  applicationDate DateTime?
+  deadline       DateTime?
+  interviewDate  DateTime?
+  resultDate      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school         School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, schoolId])
+  @@map("applications")
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  schoolId  String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, schoolId])
+  @@map("favorites")
+}
+
+model Faq {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String   @db.Text
+  category  String   // "general", "inscription", "paiement", etc.
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  name      String
+  role      String
+  imageUrl  String?
+  bio       String?  @db.Text
+  linkedin  String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("team_members")
+}
+
+model PricingPlan {
+  id            String   @id @default(uuid())
+  key           String   @unique // "starter", "student", "expert", "enterprise"
+  name          String
+  price         Float?   // Nullable for "Sur devis"
+  priceText     String?  // For "Sur devis"
+  description   String
+  features      String[]
+  platform      String?
+  tag           String?
+  buttonText    String
+  buttonVariant String   // "primary", "secondary", "disabled"
+  isActive      Boolean  @default(true)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("pricing_plans")
+}
+
+
+
