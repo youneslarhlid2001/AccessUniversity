@@ -25,6 +25,7 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.bak
 
 # vercel
 .vercel
@@ -36,10 +37,19 @@ yarn-error.log*
 /uploads
 /public/uploads
 
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
 
+# Project documentation and tools
+.agent
+.cursor
+ANALYSE_COMPLETE.md
+TEST_PLAN.md
 
-
-
-
-
-
+# System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
