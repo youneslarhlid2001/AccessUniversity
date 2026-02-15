@@ -58,7 +58,7 @@ router.post('/register', async (req, res) => {
     })
   } catch (error) {
     console.error('Register error:', error)
-    
+
     // Messages d'erreur plus explicites
     let errorMessage = 'Erreur lors de l\'inscription'
     if (error.code === 'P1001') {
@@ -68,8 +68,97 @@ router.post('/register', async (req, res) => {
     } else if (error.message) {
       errorMessage = error.message
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    })
+  }
+})
+
+// Register School
+router.post('/register-school', async (req, res) => {
+  try {
+    const { email, password, firstName, lastName, phone, schoolName, schoolWebsite } = req.body
+
+    if (!email || !password || !firstName || !lastName || !schoolName) {
+      return res.status(400).json({ message: 'Tous les champs requis doivent être remplis' })
+    }
+
+    // Vérifier si l'utilisateur existe déjà
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    })
+
+    if (existingUser) {
+      return res.status(400).json({ message: 'Cet email est déjà utilisé' })
+    }
+
+    // Hasher le mot de passe
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Transaction pour créer User et School ensemble
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Créer l'école
+      const school = await tx.school.create({
+        data: {
+          name: schoolName,
+          website: schoolWebsite || null,
+          description: "Description à compléter", // Requis
+          program: "Programmes à compléter", // Requis
+          country: "Pays à définir", // Requis
+          badges: [],
+        }
+      })
+
+      // 2. Créer l'utilisateur (Admin de l'école)
+      const user = await tx.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          firstName,
+          lastName,
+          phone: phone || null,
+          role: 'school',
+          schoolId: school.id
+        },
+      })
+
+      return { user, school }
+    })
+
+    // Générer le token JWT
+    const token = jwt.sign(
+      { userId: result.user.id, email: result.user.email, role: 'school' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    )
+
+    res.status(201).json({
+      token,
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
+        role: 'school',
+        isPremium: false,
+        schoolId: result.school.id
+      },
+      message: 'Compte école créé avec succès'
+    })
+
+  } catch (error) {
+    console.error('Register School error:', error)
+
+    let errorMessage = 'Erreur lors de l\'inscription école'
+    if (error.code === 'P2002') {
+      errorMessage = 'Cet email est déjà utilisé'
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+
+    res.status(500).json({
       message: errorMessage,
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     })
@@ -121,15 +210,15 @@ router.post('/login', async (req, res) => {
     })
   } catch (error) {
     console.error('Login error:', error)
-    
+
     let errorMessage = 'Erreur lors de la connexion'
     if (error.code === 'P1001') {
       errorMessage = 'Impossible de se connecter à la base de données. Vérifiez que PostgreSQL est démarré et que DATABASE_URL est correct dans .env'
     } else if (error.message) {
       errorMessage = error.message
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       message: errorMessage,
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     })

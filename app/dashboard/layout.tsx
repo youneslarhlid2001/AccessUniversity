@@ -25,6 +25,13 @@ const ADMIN_LINKS = [
   { href: '/dashboard/admin/payments', label: 'Paiements', icon: 'payments' },
 ]
 
+const SCHOOL_LINKS = [
+  { href: '/dashboard/school', label: "Vue d'ensemble", icon: 'overview' },
+  { href: '/dashboard/school/profile', label: 'Fiche École', icon: 'school' },
+  { href: '/dashboard/school/candidatures', label: 'Candidatures', icon: 'applications' },
+  { href: '/dashboard/school/stats', label: 'Statistiques', icon: 'stats' },
+]
+
 export default function DashboardLayout({
   children,
 }: {
@@ -51,12 +58,19 @@ export default function DashboardLayout({
 
     // Check permissions
     if (pathname?.startsWith('/dashboard/admin') && userData.role !== 'admin') {
+      const target = userData.role === 'school' ? '/dashboard/school' : '/dashboard/student'
+      router.push(target)
+      return
+    }
+
+    if (pathname?.startsWith('/dashboard/school') && userData.role !== 'school' && userData.role !== 'admin') {
       router.push('/dashboard/student')
       return
     }
 
-    if (pathname?.startsWith('/dashboard/student') && userData.role === 'admin') {
-      router.push('/dashboard/admin')
+    if (pathname?.startsWith('/dashboard/student') && userData.role !== 'student') {
+      const target = userData.role === 'admin' ? '/dashboard/admin' : '/dashboard/school'
+      router.push(target)
       return
     }
 
@@ -83,7 +97,7 @@ export default function DashboardLayout({
 
   const isActive = (path: string) => {
     // Exact match for root dashboard pages to avoid highlighting them on subpages
-    if (path === '/dashboard/student' || path === '/dashboard/admin') {
+    if (path === '/dashboard/student' || path === '/dashboard/admin' || path === '/dashboard/school') {
       return pathname === path
     }
     return pathname === path || pathname?.startsWith(path + '/')
@@ -97,7 +111,9 @@ export default function DashboardLayout({
     return null
   }
 
-  const links = user.role === 'admin' ? ADMIN_LINKS : STUDENT_LINKS
+  let links = STUDENT_LINKS
+  if (user.role === 'admin') links = ADMIN_LINKS
+  if (user.role === 'school') links = SCHOOL_LINKS
 
   const getIcon = (iconName: string) => {
     const icons: { [key: string]: JSX.Element } = {

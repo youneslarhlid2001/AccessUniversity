@@ -17,10 +17,14 @@ model User {
   firstName     String
   lastName      String
   phone         String?
-  role          String    @default("student") // "student" | "admin"
+  role          String    @default("student") // "student" | "admin" | "school"
   isPremium     Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  // Relations
+  schoolId      String?
+  school        School?   @relation(fields: [schoolId], references: [id])
 
   orientationResponses OrientationResponse[]
   recommendations      Recommendation[]
@@ -52,6 +56,7 @@ model School {
   recommendations Recommendation[]
   applications    Application[]
   favorites       Favorite[]
+  administrators  User[]
 
   @@map("schools")
 }

@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Navigation from './Navigation'
 import PageTransition from './ui/PageTransition'
+import Footer from './Footer'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -17,14 +18,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navigation />
-      <div className={pathname === '/faq' ? '' : 'pt-20'}>
+      <div className={`flex-grow ${pathname === '/faq' ? '' : 'pt-20'}`}>
         <PageTransition>
           {children}
         </PageTransition>
       </div>
-    </>
+      <Footer />
+    </div>
   )
 }
 

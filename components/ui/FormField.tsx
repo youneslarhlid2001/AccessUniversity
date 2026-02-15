@@ -16,6 +16,8 @@ interface FormFieldProps {
   maxLength?: number
   rows?: number
   options?: { value: string; label: string }[]
+  className?: string
+  labelClassName?: string
 }
 
 export default function FormField({
@@ -31,7 +33,9 @@ export default function FormField({
   helpText,
   maxLength,
   rows = 4,
-  options
+  options,
+  className,
+  labelClassName
 }: FormFieldProps) {
   const [touched, setTouched] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
@@ -59,20 +63,21 @@ export default function FormField({
 
   const inputClasses = `
     w-full px-4 py-3 rounded-lg border-2 transition-all duration-200
-    ${showError 
-      ? 'border-red-500 focus:border-red-600 focus:ring-red-500' 
+    ${showError
+      ? 'border-red-500 focus:border-red-600 focus:ring-red-500'
       : isValid === true
-      ? 'border-green-500 focus:border-green-600 focus:ring-green-500'
-      : 'border-gray-200 focus:border-blue-600 focus:ring-blue-500'
+        ? 'border-green-500 focus:border-green-600 focus:ring-green-500'
+        : 'border-gray-200 focus:border-blue-600 focus:ring-blue-500'
     }
     focus:outline-none focus:ring-2
+    ${className || ''}
   `
 
   return (
     <div className="space-y-2">
-      <label 
+      <label
         htmlFor={name}
-        className="block text-sm font-semibold text-gray-700"
+        className={`block text-sm font-semibold ${labelClassName || 'text-gray-700'}`}
       >
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -151,8 +156,8 @@ export default function FormField({
       )}
 
       {showError && (
-        <p 
-          id={`${name}-error`} 
+        <p
+          id={`${name}-error`}
           className="text-sm text-red-600 flex items-center"
           role="alert"
         >

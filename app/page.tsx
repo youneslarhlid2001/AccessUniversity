@@ -17,10 +17,10 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="w-full bg-[#F8FAFC] font-sans selection:bg-electric-500 selection:text-white">
+    <div className="w-full bg-[#F8FAFC] font-sans selection:bg-electric-500 selection:text-white overflow-x-hidden">
 
       {/* Background Decor */}
-      <div className="fixed inset-0 pointer-events-none z-0">
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-[-20%] right-[-10%] w-[80vw] h-[80vw] bg-gradient-to-br from-blue-100/40 to-indigo-100/40 rounded-full blur-[120px] opacity-60 animate-float" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-gradient-to-tr from-sky-100/40 to-blue-50/40 rounded-full blur-[100px] opacity-60 animate-float" style={{ animationDelay: '2s' }} />
       </div>
@@ -299,7 +299,7 @@ export default function Home() {
         </div>
 
         {/* Decorative letters */}
-        <div className="absolute left-0 bottom-0 text-[20vw] leading-none font-bold text-slate-50 opacity-50 select-none pointer-events-none -mb-10 -ml-10">AU</div>
+        <div className="absolute left-0 bottom-0 text-[20vw] leading-none font-bold text-slate-50 opacity-50 select-none pointer-events-none -ml-10">AU</div>
       </section>
 
     </div>
