@@ -93,3 +93,118 @@ graph TD
     API -- "Sert les données" --> PUBLIC
     API -- "Sert les données" --> DASHBOARDS
 ```
+
+## 4. Architecture Complète du Système
+
+Ce schéma détaille l'ensemble des composants de l'application, des utilisateurs finaux jusqu'à la structure de la base de données.
+
+```mermaid
+graph TD
+    %% ---------------------------------------------------------
+    %% 1. ACTEURS (Utilisateurs)
+    %% ---------------------------------------------------------
+    subgraph A_Users ["👤 ACTEURS"]
+        UserStudent[("🎓 Étudiant")]
+        UserSchool[("Show Admin École")]
+        UserAdmin[("🛡️ Admin Système")]
+        Visitor[("🌍 Visiteur")]
+    end
+
+    %% ---------------------------------------------------------
+    %% 2. FRONTEND (Next.js)
+    %% ---------------------------------------------------------
+    subgraph Frontend ["🖥️ FRONTEND (Next.js)"]
+        
+        %% Zone Publique
+        subgraph PublicPages ["🌐 Zone Publique"]
+            PageHome["Accueil & Landing"]
+            PageSchools["Catalogue Écoles"]
+            PageAuth["Login / Register"]
+        end
+
+        %% Zone Sécurisée (Dashboards)
+        subgraph Dashboards ["🔒 Zone Sécurisée"]
+            DashStudent["Dashboard Étudiant
+            (/dashboard/student)"]
+            DashSchool["Dashboard École
+            (/dashboard/school)"]
+            DashAdmin["Dashboard Admin
+            (/dashboard/admin)"]
+        end
+
+        %% Middleware de protection
+        Middleware("🛡️ Middleware Auth
+        (Vérification Token + Rôle)")
+    end
+
+    %% ---------------------------------------------------------
+    %% 3. BACKEND (Express API)
+    %% ---------------------------------------------------------
+    subgraph Backend ["⚙️ BACKEND (Express API)"]
+        
+        %% Contrôleurs
+        subgraph Controllers ["🎮 Controllers"]
+            AuthCtrl["Auth Controller
+            (Register, Login)"]
+            SchoolCtrl["School Controller
+            (CRUD, Search)"]
+            AppCtrl["Application Controller
+            (Postuler, Status)"]
+            UserCtrl["User Controller
+            (Profile, Uploads)"]
+            AdminCtrl["Admin Controller
+            (Metrics, Users)"]
+        end
+
+        %% Services & Utils
+        AuthService["🔑 Service JWT/Bcrypt"]
+        
+    end
+
+    %% ---------------------------------------------------------
+    %% 4. DATABASE (PostgreSQL + Prisma)
+    %% ---------------------------------------------------------
+    subgraph Database ["💾 DATABASE (PostgreSQL)"]
+        T_User[("Table: User
+        (role: student/school/admin)")]
+        T_School[("Table: School")]
+        T_App[("Table: Application
+        (Lien User <-> School)")]
+        T_Doc[("Table: Documents")]
+        
+    end
+
+    %% ---------------------------------------------------------
+    %% RELATIONS & FLUX
+    %% ---------------------------------------------------------
+
+    %% Accès Frontend
+    Visitor --> PageHome
+    Visitor --> PageSchools
+    Visitor --> PageAuth
+
+    UserStudent --> PageAuth
+    UserSchool --> PageAuth
+    UserAdmin --> PageAuth
+
+    %% Navigation après Login
+    PageAuth -.-> |JWT Token| Middleware
+    Middleware --> |Role: Student| DashStudent
+    Middleware --> |Role: School| DashSchool
+    Middleware --> |Role: Admin| DashAdmin
+
+    %% Appels API (Frontend -> Backend)
+    DashStudent --> |GET /schools, POST /apply| SchoolCtrl & AppCtrl
+    DashSchool --> |PUT /school/my, GET /applicants| SchoolCtrl & AppCtrl
+    DashAdmin --> |GET /users, DELETE /school| AdminCtrl & UserCtrl
+    PageAuth --> |POST /register| AuthCtrl
+
+    %% Backend Logique
+    Controllers --> AuthService
+    Controllers --> |Prisma Client| Database
+
+    %% Base de données Relations
+    T_User -.-> |1..n| T_App
+    T_School -.-> |1..n| T_App
+    T_User -.-> |1..1| T_School : "Si Role=School"
+```
