@@ -63,11 +63,11 @@ Il n'y a pas de communication "directe" (Peer-to-Peer) entre les dashboards. Tou
 ```mermaid
 graph TD
     %% Base de données Centrale
-    DB[(PostgreSQL Database)]
+    DB[("PostgreSQL Database")]
     style DB fill:#333,stroke:#fff,stroke-width:2px,color:#fff
 
     %% API Layer
-    API[API Backend (Node/Express)]
+    API["API Backend (Node/Express)"]
     style API fill:#e6fffa,stroke:#047857
 
     %% Site Vitrine
