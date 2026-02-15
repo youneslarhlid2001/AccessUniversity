@@ -206,5 +206,5 @@ graph TD
     %% Base de données Relations
     T_User -.-> |1..n| T_App
     T_School -.-> |1..n| T_App
-    T_User -.-> |1..1| T_School : "Si Role=School"
+    T_User -.-> |"1..1 (Si Role=School)"| T_School
 ```
