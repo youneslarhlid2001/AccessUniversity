@@ -71,7 +71,7 @@ graph TD
     style API fill:#e6fffa,stroke:#047857
 
     %% Site Vitrine
-    subgraph PUBLIC [Site Vitrine (Next.js)]
+    subgraph PUBLIC ["Site Vitrine (Next.js)"]
         Home[Accueil]
         SchoolPage[Page École]
     end
